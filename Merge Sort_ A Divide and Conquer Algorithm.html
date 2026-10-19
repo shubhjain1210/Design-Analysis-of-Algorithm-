@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Merge Sort: A Divide and Conquer Algorithm</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Sora:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#07122b;--blue:#3b82f6;--cyan:#22d3ee;--green:#34d399;--amber:#fbbf24;--ink:#e6f1ff;--mut:#8fa6cc;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:#040a1a;color:var(--ink);font-family:Sora,system-ui,sans-serif;overflow:hidden}
+#wrap{position:absolute;inset:0 0 56px 0;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center;background:radial-gradient(ellipse at 50% 0%,#0f2350 0%,var(--bg) 62%);overflow:hidden;border-radius:6px}
+.sc{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .8s}
+.sc.on{opacity:1;visibility:visible}
+.b{width:56px;height:56px;border-radius:10px;border:2px solid var(--blue);background:rgba(59,130,246,.16);display:flex;align-items:center;justify-content:center;font:700 22px 'JetBrains Mono',monospace;flex:none;transition:all .9s cubic-bezier(.3,.9,.3,1)}
+.b.c{border-color:var(--cyan);background:rgba(34,211,238,.16);box-shadow:0 0 14px rgba(34,211,238,.35)}
+.b.g{border-color:var(--green);background:rgba(52,211,153,.16)}
+.b.glow{border-color:var(--amber);background:rgba(251,191,36,.18);box-shadow:0 0 22px var(--amber)}
+.b.gone{opacity:.15;box-shadow:none}
+.b.sm{width:40px;height:40px;font-size:16px;border-radius:8px}
+.abs{position:absolute}
+.row{position:absolute;display:flex;gap:8px;transform:translateX(-50%)}
+h1{margin:0;font-weight:800;letter-spacing:.06em;font-size:112px;background:linear-gradient(90deg,var(--blue),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0;font-weight:600;font-size:36px;position:absolute;left:0;right:0;top:34px;text-align:center}
+.sub{font-weight:300;font-size:34px;color:var(--mut)}
+#cap{position:absolute;left:90px;right:90px;bottom:22px;text-align:center;font-size:22px;line-height:1.4;color:#cfe0ff;z-index:5;min-height:30px;text-shadow:0 2px 10px #000}
+#bar{position:absolute;left:0;top:0;height:4px;background:linear-gradient(90deg,var(--blue),var(--cyan));width:0;transition:width .8s;z-index:6}
+.fade{opacity:0;transform:translateY(16px);transition:all .8s}.fade.in{opacity:1;transform:none}
+.card{position:absolute;width:350px;top:230px;padding:22px;border-radius:16px;background:rgba(15,35,80,.6);border:1.5px solid var(--k);box-shadow:0 0 26px -8px var(--k)}
+.card h3{margin:0 0 8px;font-size:26px;color:var(--k)}.card p{margin:0 0 16px;font-size:18px;color:#c3d4f2;line-height:1.45}
+.card .mini{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.arrow{position:absolute;top:360px;width:60px;height:4px;background:repeating-linear-gradient(90deg,var(--cyan) 0 10px,transparent 10px 18px);background-size:36px 4px;animation:m .8s linear infinite}
+.arrow:after{content:"";position:absolute;right:-2px;top:-8px;border-left:16px solid var(--cyan);border-top:10px solid transparent;border-bottom:10px solid transparent}
+@keyframes m{to{background-position:36px 0}}
+.grp{position:absolute;display:flex;gap:6px;padding:6px;border-radius:14px;background:rgba(59,130,246,.07);border:1px dashed #2a4a8a;transform:translateX(-50%)}
+.grp .b{width:52px;height:52px}
+svg.ov{position:absolute;inset:0;width:1280px;height:720px;pointer-events:none}
+.slot{width:56px;height:56px;border-radius:10px;outline:2px dashed #27437f;outline-offset:-2px}
+.lbl{position:absolute;transform:translateX(-50%);font-size:16px;color:var(--mut)}
+#cmp{position:absolute;left:0;right:0;top:238px;text-align:center;font:700 26px 'JetBrains Mono',monospace;color:var(--amber);height:34px}
+#hist{position:absolute;left:150px;top:525px;display:grid;grid-template-columns:1fr 1fr;gap:4px 40px;font:500 17px 'JetBrains Mono',monospace;color:#9ec3ff}
+#hist div{opacity:0;transition:opacity .6s}#hist div.in{opacity:1}
+.code{position:absolute;left:70px;top:105px;width:700px;padding:24px 28px;border-radius:16px;background:#050d22;border:1.5px solid #1d3a78;font:500 24px/1.75 'JetBrains Mono',monospace;white-space:pre}
+.code>span{display:block;padding:0 10px;border-radius:6px;border-left:4px solid transparent;transition:all .5s;color:#c7d8f5}
+.code>span.hl{background:rgba(34,211,238,.13);border-left-color:var(--cyan)}
+.k{color:var(--cyan)}.n{color:var(--amber)}.f{color:#7db0ff}.cm{color:#5f7bb0}
+.stat{position:absolute;left:830px;width:380px;padding:18px 22px;border-radius:14px;background:rgba(15,35,80,.6);border:1.5px solid var(--blue)}
+.stat b{font:700 34px 'JetBrains Mono',monospace;color:var(--cyan);display:block}.stat small{font-size:17px;color:var(--mut)}
+#ctl{position:fixed;left:0;right:0;bottom:0;height:56px;padding-bottom:env(safe-area-inset-bottom,0px);display:flex;gap:10px;align-items:center;justify-content:center;background:#040a1a}
+button{font:600 14px Sora,sans-serif;color:var(--ink);background:#0f2350;border:1.5px solid var(--blue);border-radius:999px;padding:8px 18px;cursor:pointer}
+button:hover,button:focus-visible{border-color:var(--cyan);outline:none;box-shadow:0 0 0 3px rgba(34,211,238,.3)}
+</style></head><body>
+<div id="wrap"><div id="stage"><div id="bar"></div>
+
+<div class="sc" id="s1">
+ <div class="abs" style="left:0;right:0;top:60px;text-align:center"><h1>MERGE SORT</h1><div class="sub">A Divide and Conquer Algorithm</div></div>
+ <div id="a1"></div>
+ <div id="t1" class="fade abs" style="left:0;right:0;top:600px;text-align:center;font-size:24px;color:var(--cyan)">Sorted data is faster to search, compare and combine.</div>
+</div>
+
+<div class="sc" id="s2"><h2>The idea in three steps</h2>
+ <div class="row" id="a2" style="left:640px;top:120px"></div>
+ <div class="card fade" id="c1" style="--k:var(--blue);left:60px"><h3>1. Divide</h3><p>Split the array into smaller subarrays.</p><div class="mini" id="m1"></div></div>
+ <div class="arrow fade" id="r1" style="left:420px"></div>
+ <div class="card fade" id="c2" style="--k:var(--cyan);left:465px"><h3>2. Conquer</h3><p>Sort the small subarrays. One element is already sorted.</p><div class="mini" id="m2"></div></div>
+ <div class="arrow fade" id="r2" style="left:825px"></div>
+ <div class="card fade" id="c3" style="--k:var(--green);left:870px"><h3>3. Merge</h3><p>Combine sorted subarrays into one sorted array.</p><div class="mini" id="m3"></div></div>
+</div>
+
+<div class="sc" id="s3"><h2 id="hint">Divide the array</h2><svg class="ov" id="svg3"></svg><div id="tree"></div></div>
+
+<div class="sc" id="s4"><h2 id="h4">Merge and sort</h2><svg class="ov" id="svg4">
+ <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8z" fill="#22d3ee"/></marker></defs>
+ <path class="ma" d="M440 215 L620 320" stroke="#22d3ee" stroke-width="3" stroke-dasharray="8 8" fill="none" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" to="-32" dur=".8s" repeatCount="indefinite"/></path>
+ <path d="M840 215 L660 320" stroke="#22d3ee" stroke-width="3" stroke-dasharray="8 8" fill="none" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" to="-32" dur=".8s" repeatCount="indefinite"/></path></svg>
+ <div id="p4"></div><div id="cmp"></div><div id="hist"></div></div>
+
+<div class="sc" id="s5"><h2>The algorithm</h2>
+ <div class="code" id="code"></div>
+ <div class="stat fade" id="st1" style="top:140px"><b>O(n log n)</b><small>Time in best, average and worst cases</small></div>
+ <div class="stat fade" id="st2" style="top:285px"><b>O(n)</b><small>Extra space for the temporary merged arrays</small></div>
+ <div class="stat fade" id="st3" style="top:430px"><b>Stable</b><small>Equal values keep their original order</small></div>
+</div>
+
+<div id="cap"></div></div></div>
+<div id="ctl"><button id="bp">Pause</button><button id="br">Restart</button><button id="bn">Narration: off</button></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let tok=0,paused=false,talk=false,sc=1;
+const sleep=ms=>new Promise((res,rej)=>{const t=tok;let e=0;const iv=setInterval(()=>{if(t!==tok){clearInterval(iv);rej('x')}else if(!paused){e+=50;if(e>=ms){clearInterval(iv);res()}}},50)});
+function fit(){const w=$('wrap');sc=Math.min(w.clientWidth/1280,w.clientHeight/720);$('stage').style.transform=`translate(-50%,-50%) scale(${sc})`}
+addEventListener('resize',fit);fit();
+const B=(v,c='')=>{const d=document.createElement('div');d.className='b '+c;d.textContent=v;return d};
+const show=n=>{document.querySelectorAll('.sc').forEach((s,i)=>s.classList.toggle('on',i+1===n));$('bar').style.width=n*20+'%'};
+function cap(t){$('cap').textContent=t;if(talk&&window.speechSynthesis){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.95;speechSynthesis.speak(u)}}
+async function sp(){while(talk&&window.speechSynthesis&&speechSynthesis.speaking)await sleep(200)}
+const U=[38,27,43,3,9,82,10];
+const mg=(l,r)=>{const o=[];let i=0,j=0;while(i<l.length&&j<r.length)o.push(l[i]<=r[j]?l[i++]:r[j++]);return o.concat(l.slice(i),r.slice(j))};
+
+async function s1(){
+ show(1);$('t1').classList.remove('in');cap('Merge Sort is an efficient sorting algorithm based on the divide-and-conquer technique. It divides an array into smaller parts, sorts them, and merges them back together in ascending order.');
+ const a=$('a1');a.innerHTML='';
+ const sc0=[[240,360,-14],[900,430,10],[420,520,-6],[700,350,16],[1040,520,-12],[540,420,8],[330,560,14]];
+ const rank=U.map(v=>[...U].sort((x,y)=>x-y).indexOf(v));
+ const bl=U.map((v,i)=>{const b=B(v);b.className='b abs';b.style.left=sc0[i][0]+'px';b.style.top=sc0[i][1]+'px';b.style.transform=`rotate(${sc0[i][2]}deg)`;b.style.opacity=0;a.appendChild(b);return b});
+ await sleep(1200);bl.forEach(b=>b.style.opacity=1);await sleep(4500);
+ bl.forEach((b,i)=>{b.style.transitionDelay=rank[i]*.15+'s';b.style.left=374+rank[i]*76+'px';b.style.top='470px';b.style.transform='none';b.classList.add('c')});
+ await sleep(3500);$('t1').classList.add('in');await sleep(3000);await sp();
+}
+
+async function s2(){
+ show(2);cap('Take this unsorted array. Merge Sort works in three steps: divide it into smaller subarrays, conquer by sorting them, then merge the sorted pieces into one sorted array.');
+ ['c1','c2','c3','r1','r2'].forEach(i=>$(i).classList.remove('in'));
+ $('a2').innerHTML='';U.forEach(v=>$('a2').appendChild(B(v)));
+ const mini=(id,groups,cls)=>{const m=$(id);m.innerHTML='';groups.forEach((g,gi)=>{const w=document.createElement('div');w.style.cssText='display:flex;gap:4px;padding:4px;border:1px dashed #2a4a8a;border-radius:8px';g.forEach(v=>{const b=B(v,'sm '+cls);w.appendChild(b)});m.appendChild(w)})};
+ mini('m1',[[38,27,43,3],[9,82,10]],'');mini('m2',[[38],[27],[43],[3],[9],[82],[10]],'c');mini('m3',[[3,9,10,27,38,43,82]],'g');
+ await sleep(2500);
+ for(const [c,r] of [['c1','r1'],['c2','r2'],['c3',null]]){$(c).classList.add('in');await sleep(1500);if(r)$(r).classList.add('in');await sleep(1500)}
+ await sleep(2500);await sp();
+}
+
+const NODES=[[0,0,6],[1,0,3],[1,4,6],[2,0,1],[2,2,3],[2,4,4],[2,5,6],[3,0,0],[3,1,1],[3,2,2],[3,3,3],[3,5,5],[3,6,6]];
+const cx=i=>190+i*150,ny=l=>110+l*135,nx=(a,b)=>(cx(a)+cx(b))/2;
+async function s3(){
+ show(3);$('tree').innerHTML='';$('svg3').innerHTML='';
+ cap('We repeatedly divide the array into smaller subarrays until each subarray contains only one element. A single-element array is already sorted.');
+ const hints=['Start with the full array: 7 elements','Split into [38, 27, 43, 3] and [9, 82, 10]','Split each half again','Keep splitting down to single elements'];
+ for(let l=0;l<4;l++){
+  $('hint').textContent=hints[l];
+  for(const [lv,a,b] of NODES.filter(n=>n[0]===l)){
+   const g=document.createElement('div');g.className='grp';const leaf=a===b;
+   U.slice(a,b+1).forEach(v=>g.appendChild(B(v,leaf?'c':'')));
+   g.style.left=nx(a,b)+'px';g.style.top=ny(lv)+'px';g.style.opacity=0;g.style.transition='opacity .9s, top .9s';$('tree').appendChild(g);
+   const p=NODES.find(q=>q[0]===lv-1&&q[1]<=a&&b<=q[2]);
+   if(p){const ln=document.createElementNS('http://www.w3.org/2000/svg','path');ln.setAttribute('d',`M${nx(p[1],p[2])} ${ny(p[0])+66} L${nx(a,b)} ${ny(lv)-2}`);ln.setAttribute('stroke','#22d3ee');ln.setAttribute('stroke-width','2.5');ln.setAttribute('fill','none');ln.setAttribute('pathLength','1');ln.style.cssText='stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1s';$('svg3').appendChild(ln);requestAnimationFrame(()=>requestAnimationFrame(()=>ln.style.strokeDashoffset=0))}
+   requestAnimationFrame(()=>g.style.opacity=1);
+  }
+  await sleep(l===0?2500:3800);
+ }
+ $('hint').textContent='Every single-element array is already sorted';
+ await sleep(2500);await sp();
+}
+
+async function s4(){
+ show(4);$('hist').innerHTML='';cap('Now we merge. Compare the first element of each sorted group and always take the smaller one. Repeat until every element is placed.');
+ const P=$('p4');
+ const r1=mg([38],[27]),r2=mg([43],[3]),r3=mg(r1,r2),r4=mg([82],[10]),r5=mg([9],r4),fin=mg(r3,r5);
+ const steps=[[[38],[27],r1],[[43],[3],r2],[r1,r2,r3],[[82],[10],r4],[[9],r4,r5],[r3,r5,fin]];
+ const fmt=a=>'['+a.join(', ')+']';
+ for(let s=0;s<steps.length;s++){
+  const [L,R,O]=steps[s];$('h4').textContent=`Merge ${s+1} of 6`;$('cmp').textContent='';P.innerHTML='';
+  const mk=(arr,x,y,cls)=>{const r=document.createElement('div');r.className='row';r.style.left=x+'px';r.style.top=y+'px';arr.forEach(v=>{const b=cls?B(v,cls):B(v);r.appendChild(b)});P.appendChild(r);return r};
+  const lr=mk(L,430,150),rr=mk(R,850,150);
+  const sl=document.createElement('div');sl.className='row';sl.style.cssText='left:640px;top:330px';const slots=O.map(()=>{const d=document.createElement('div');d.className='slot';sl.appendChild(d);return d});P.appendChild(sl);
+  [['left group',430,115],['right group',850,115],['merged result',640,395]].forEach(([t,x,y])=>{const e=document.createElement('div');e.className='lbl';e.style.cssText=`left:${x}px;top:${y}px`;e.textContent=t;P.appendChild(e)});
+  const lb=[...lr.children],rb=[...rr.children];let i=0,j=0,k=0;
+  const mv=(src,v,gr)=>{const slot=slots[k++];const a=src.getBoundingClientRect(),b=slot.getBoundingClientRect();const n=B(v,gr||'g');n.style.transition='none';n.style.transform=`translate(${(a.left-b.left)/sc}px,${(a.top-b.top)/sc}px)`;slot.appendChild(n);n.offsetWidth;n.style.transition='transform 1s cubic-bezier(.3,.9,.3,1)';n.style.transform='none';src.classList.add('gone');src.classList.remove('glow')};
+  await sleep(1300);
+  while(i<L.length&&j<R.length){
+   lb[i].classList.add('glow');rb[j].classList.add('glow');
+   const takeL=L[i]<=R[j];$('cmp').textContent=`${L[i]} vs ${R[j]}  →  take ${takeL?L[i]:R[j]}`;await sleep(1500);
+   if(takeL){mv(lb[i],L[i]);rb[j].classList.remove('glow');i++}else{mv(rb[j],R[j]);lb[i].classList.remove('glow');j++}
+   await sleep(1200);
+  }
+  if(i<L.length||j<R.length){$('cmp').textContent='One side is empty: copy the rest';await sleep(900);
+   while(i<L.length){mv(lb[i],L[i]);i++;await sleep(900)}
+   while(j<R.length){mv(rb[j],R[j]);j++;await sleep(900)}}
+  $('cmp').textContent=`${fmt(L)} + ${fmt(R)}  =  ${fmt(O)}`;
+  if(s===5)slots.forEach(d=>d.firstChild.classList.add('c'));
+  const h=document.createElement('div');h.textContent=`${fmt(L)} + ${fmt(R)} → ${fmt(O)}`;$('hist').appendChild(h);requestAnimationFrame(()=>h.classList.add('in'));
+  await sleep(s===5?4000:1800);
+ }
+ $('h4').textContent='Sorted: [3, 9, 10, 27, 38, 43, 82]';await sleep(3000);await sp();
+}
+
+async function s5(){
+ show(5);['st1','st2','st3'].forEach(i=>$(i).classList.remove('in'));
+ cap('The pseudocode mirrors the three steps: divide, conquer recursively, and merge. Merge Sort runs in O(n log n) time, and it is stable.');
+ const L=[`<span class="f">MERGE_SORT</span>(array):`,`    <span class="k">if</span> length(array) ≤ <span class="n">1</span>:`,`        <span class="k">return</span> array   <span class="cm">// base case</span>`,`    mid ← length(array) / <span class="n">2</span>   <span class="cm">// divide</span>`,`    left ← <span class="f">MERGE_SORT</span>(array[ : mid])  <span class="cm">// conquer</span>`,`    right ← <span class="f">MERGE_SORT</span>(array[mid : ])`,`    <span class="k">return</span> <span class="f">MERGE</span>(left, right)   <span class="cm">// merge</span>`];
+ $('code').innerHTML=L.map(l=>`<span>${l}</span>`).join('');const ls=[...$('code').children];
+ for(const g of [[0],[1,2],[3],[4,5],[6]]){ls.forEach(x=>x.classList.remove('hl'));g.forEach(i=>ls[i].classList.add('hl'));await sleep(2500)}
+ for(const id of ['st1','st2','st3']){$(id).classList.add('in');await sleep(1800)}
+ await sleep(2500);await sp();
+ cap('Merge Sort: divide, conquer, merge. Press Restart to watch again.');
+}
+
+async function run(){tok++;paused=false;$('bp').textContent='Pause';try{await s1();await s2();await s3();await s4();await s5()}catch(e){}}
+$('bp').onclick=()=>{paused=!paused;$('bp').textContent=paused?'Play':'Pause';if(window.speechSynthesis)paused?speechSynthesis.pause():speechSynthesis.resume()};
+$('br').onclick=()=>{if(window.speechSynthesis)speechSynthesis.cancel();run()};
+$('bn').onclick=()=>{talk=!talk;$('bn').textContent='Narration: '+(talk?'on':'off');if(!talk&&window.speechSynthesis)speechSynthesis.cancel();else if(talk)run()};
+run();
+</script></body></html>
